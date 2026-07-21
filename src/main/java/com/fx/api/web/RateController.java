@@ -1,0 +1,44 @@
+package com.fx.api.web;
+
+import com.fx.api.model.ConversionRequest;
+import com.fx.api.model.ConversionResult;
+import com.fx.api.model.Rate;
+import com.fx.api.service.ConversionService;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api")
+public class RateController {
+
+    private final ConversionService conversionService;
+
+    public RateController(ConversionService conversionService) {
+        this.conversionService = conversionService;
+    }
+
+    @GetMapping("/rates")
+    public List<Rate> rates() {
+        return conversionService.latestRates();
+    }
+
+    @GetMapping("/rates/{base}/{quote}")
+    public Rate rate(@PathVariable String base, @PathVariable String quote) {
+        return conversionService.latestRate(base, quote);
+    }
+
+    @PostMapping("/conversions")
+    @ResponseStatus(HttpStatus.CREATED)
+    public ConversionResult convert(@RequestBody @Valid ConversionRequest request) {
+        return conversionService.convert(request);
+    }
+}
