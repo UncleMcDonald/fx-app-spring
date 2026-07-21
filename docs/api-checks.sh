@@ -13,3 +13,8 @@ curl -i localhost:8080/api/rates/EUR/XXX
 curl -i -X POST localhost:8080/api/conversions \
   -H "Content-Type: application/json" \
   -d '{"base":"EUR","quote":"USD","amount":-5}'
+
+# malformed JSON -> 400 JSON via the message-readable handler
+curl -i -X POST localhost:8080/api/conversions \
+  -H "Content-Type: application/json" \
+  -d 'not json'
