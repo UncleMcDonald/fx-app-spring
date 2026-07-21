@@ -3,7 +3,9 @@ package com.fx.api.web;
 import com.fx.api.model.ConversionRequest;
 import com.fx.api.model.ConversionResult;
 import com.fx.api.model.Rate;
+import com.fx.api.repo.RateRepository;
 import com.fx.api.service.ConversionService;
+import com.fx.api.service.UnknownPairException;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,20 +22,25 @@ import java.util.List;
 @RequestMapping("/api")
 public class RateController {
 
+    private final RateRepository rates;
     private final ConversionService conversionService;
 
-    public RateController(ConversionService conversionService) {
+    public RateController(RateRepository rates, ConversionService conversionService) {
+        this.rates = rates;
         this.conversionService = conversionService;
     }
 
     @GetMapping("/rates")
     public List<Rate> rates() {
-        return conversionService.latestRates();
+        return rates.findLatest();
     }
 
     @GetMapping("/rates/{base}/{quote}")
     public Rate rate(@PathVariable String base, @PathVariable String quote) {
-        return conversionService.latestRate(base, quote);
+        String normalizedBase = base.toUpperCase();
+        String normalizedQuote = quote.toUpperCase();
+        return rates.findLatestForPair(normalizedBase, normalizedQuote)
+                .orElseThrow(() -> new UnknownPairException(normalizedBase + "/" + normalizedQuote));
     }
 
     @PostMapping("/conversions")
